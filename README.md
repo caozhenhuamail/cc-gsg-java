@@ -1,4 +1,4 @@
-https://start.spring.io/#!type=maven-project&language=java&platformVersion=2.3.1.RELEASE&packaging=jar&jvmVersion=11&groupId=io.camunda&artifactId=cloud-starter&name=cloud-starter&description=Getting%20Started%20with%20Camunda%20Cloud%20and%20Spring%20Boot&packageName=io.camunda.cloud-starter
+https://start.spring.io/#!type=maven-project&language=java&platformVersion=2.3.1.RELEASE&packaging=jar&jvmVersion=11&groupId=io.camunda&artifactId=cloudstarter&name=cloudstarter&description=Getting%20Started%20with%20Camunda%20Cloud%20and%20Spring%20Boot&packageName=io.camunda.cloudstarter
 
 # Getting Started with Camunda Cloud and Node.js
 
@@ -14,45 +14,22 @@ Watch a [video tutorial on YouTube](https://youtu.be/AOj64vzEZ_8) walking throug
 
 ## Scaffolding the project
 
-* Download a maven Spring starter from [here](https://start.spring.io/#!type=maven-project&language=java&platformVersion=2.3.1.RELEASE&packaging=jar&jvmVersion=11&groupId=io.camunda&artifactId=cloud-starter&name=cloud-starter&description=Getting%20Started%20with%20Camunda%20Cloud%20and%20Spring%20Boot&packageName=io.camunda.cloud-starter).
+* Download a maven Spring starter from [here](https://start.spring.io/#!type=maven-project&language=java&platformVersion=2.3.1.RELEASE&packaging=jar&jvmVersion=11&groupId=io.camunda&artifactId=cloudstarter&name=cloudstarter&description=Getting%20Started%20with%20Camunda%20Cloud%20and%20Spring%20Boot&packageName=io.camunda.cloudstarter&dependencies=webflux).
+
 * Unzip it into a new directory.
 
 [Video link](https://youtu.be/AOj64vzEZ_8?t=30)
 
-* Create project:
+* Add the [Spring Zeebe Client](https://github.com/zeebe-io/spring-zeebe) dependency to the `pom.xml` file:
 
-```bash
-mkdir camunda-cloud-get-started-node
-cd camunda-cloud-get-started-node
-npm init -y
-tsc --init
+```xml
+<dependency>
+    <groupId>io.zeebe.spring</groupId>
+    <artifactId>spring-zeebe-starter</artifactId>
+    <version>0.23.0</version>
+</dependency>
 ```
 [Video link](https://youtu.be/AOj64vzEZ_8?t=95)
-
-* Edit `tsconfig.json` with the following config:
-
-```json
-{
-  "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "noImplicitAny": false,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  }
-}
-```
-[Video link](https://youtu.be/AOj64vzEZ_8?t=155)
-
-* Install `zeebe-node` and `dotenv`:
-
-```
-npm i zeebe-node dotenv
-```
 
 ## Create Camunda Cloud cluster
 
@@ -67,64 +44,60 @@ npm i zeebe-node dotenv
 
 [Video link](https://youtu.be/AOj64vzEZ_8?t=454)
 
-* Create a file `.env` in the root of the project
-* Paste the client connection environment variable block 
-* Delete the `export` from in front of each line in the file
+* Add the client connection credentials for your cluster to the file `src/main/resources/application.properties`:
 
-You will end up something that looks like this:
-
-```bash
-ZEEBE_ADDRESS='231bb36a-1588-4f1e-b4f6-e09944d7efd7.zeebe.camunda.io:443'
-ZEEBE_CLIENT_ID='Ny-WTmQniq4XluEG0_L9KAl-G8~i_dH1'
-ZEEBE_CLIENT_SECRET='9QZWpArT_2C1jU7Kru3Kll~7Hev9jyMsuo5tCk2ko0ZpzNRDb7nbiVqmcUBL'
-ZEEBE_AUTHORIZATION_SERVER_URL='https://login.cloud.camunda.io/oauth/token'
+```
+zeebe.client.cloud.clusterId=3b640f45-0dcd-469a-8551-7f68a5d4f53b
+zeebe.client.cloud.clientId=rvQhH1LgzZ8hWxYpnX-WCFoqxl3ps6_o
+zeebe.client.cloud.clientSecret=Y_tumI88mpbDbxlY0ueVyPK6BHjMAe5FpBtPU4TQPPyr4FuDxpMN7P9Mj7M26j6a
+zeebe.client.worker.defaultName=whatever
 ```
 
 * Save the file.
 
-## Test Connection with Camunda Cloud 
+## Test Connection with Camunda Cloud
 
-[Video link](https://youtu.be/AOj64vzEZ_8?t=370)
+[Video link](https://youtu.be/AOj64vzEZ_8?t=155)
 
-We will connect to the Zeebe cluster in Camunda Cloud, and request its topology.
+* Annotate the `CloudStarterApplication` class in the file `src/main/java/io.camunda/CloudStarterApplication.java` with 
+the `@EnableZeebeClient` annotation, and add the `@Autowired` `ZeebeClientLifecycle` property:
 
-* In the `src` folder, create a file called `app.ts`.
-* Edit the file, and put in the following code:
-
-```typescript
-import { ZBClient } from "zeebe-node";
-require("dotenv").config();
-
-async function main() {
-  const zbc = new ZBClient();
-  const res = await zbc.topology();
-  console.log(res);
-}
-
-main();
-```
-
-* Run the program with the command: `ts-node src/app.ts`
-
-You will see output like this:
-
-```json
-03:19:46.658 | zeebe |  INFO: Authenticating client with Camunda Cloud...
-03:19:49.998 | zeebe |  INFO: Established encrypted connection to Camunda Cloud.
-{
-  brokers: [
-    {
-      partitions: [Array],
-      nodeId: 0,
-      host: 'zeebe-0.zeebe-broker-service.231bb36a-1588-4f1e-b4f6-e09944d7efd7-zeebe.svc.cluster.local',
-      port: 26501
-    }
-  ],
-  clusterSize: 1,
-  partitionsCount: 1,
-  replicationFactor: 1
+```java
+@SpringBootApplication
+@EnableZeebeClient
+public class CloudStarterApplication {
+    	@Autowired
+    	private ZeebeClientLifecycle client;
 }
 ```
+
+* Add the `@RestController` annotation to the class, and create a REST mapping that returns the cluster topology: 
+
+```java
+@SpringBootApplication
+@RestController
+@EnableZeebeClient
+public class CloudStarterApplication {
+    
+	@Autowired
+	private ZeebeClientLifecycle client;
+	public static void main(String[] args) {
+		SpringApplication.run(CloudStarterApplication.class, args);
+	}
+
+	@GetMapping("/status")
+	public String getStatus() {
+		Topology topology = client.newTopologyRequest().send().join();
+		return topology.toString();
+	}
+}
+```
+
+* Run the application with the command `mvn spring-boot:run`.
+
+* Open [http://localhost:8080/status](http://localhost:8080/status) in your web browser.
+
+You will see the topology response from the cluster.
 
 ## Create a BPMN model
 
@@ -142,86 +115,57 @@ It should look like this:
 ![](img/first-model.png)
 
 * Click on the blank canvas of the diagram, and set the _Id_ to `test-process`, and the _Name_ to "Test Process".
-* Save the diagram to `bpmn/test-process.bpmn` in your project.
+* Save the diagram to `src/main/resources/test-process.bpmn` in your project.
 
 ## Deploy the BPMN model to Camunda Cloud
 
 [Video Link](https://youtu.be/AOj64vzEZ_8?t=908)
 
-* Edit the `src/app.ts` file, to be this:
+* Edit the `src/main/java/io.camunda/CloudStarterApplication.java` file, and add the `@ZeebeDeployment` annotation to the 
+`CloudStarterApplication` class:
 
-```typescript
-import { ZBClient } from "zeebe-node";
-import * as path from "path";
-require("dotenv").config();
-
-async function main() {
-  const zbc = new ZBClient();
-  const filename = path.join(__dirname, "..", "bpmn", "test-process");
-  const res = await zbc.deployWorkflow(filename);
-  console.log(res);
-}
-
-main();
-```
-* Run the program with the command: `ts-node src/app.ts`
-
-You will see output similar to this: 
-
-```json
-01:37:30.710 | zeebe |  INFO: Authenticating client with Camunda Cloud...
-01:37:36.466 | zeebe |  INFO: Established encrypted connection to Camunda Cloud.
-{
-  workflows: [
-    {
-      bpmnProcessId: 'test-process',
-      version: 1,
-      workflowKey: '2251799813687791',
-      resourceName: 'test-process.bpmn'
-    }
-  ],
-  key: '2251799813688440'
+```java
+// ...
+@ZeebeDeployment(classPathResources = {"test-process.bpmn"})
+public class CloudStarterApplication {
+    // ...
 }
 ```
-
-The workflow is now deployed to the cluster.
 
 ## Start a Workflow Instance
 
 [Video Link](https://youtu.be/AOj64vzEZ_8?t=1037)
 
-* Edit the `src/app.ts` file, and make it look like this:
+* Edit the `src/main/java/io.camunda/CloudStarterApplication.java` file, and add a REST method to start an instance
+of the workflow:
 
-```typescript
-import { ZBClient } from "zeebe-node";
-import * as path from "path";
-require("dotenv").config();
+```java
+// ...
+public class CloudStarterApplication {
+    // ...
 
-async function main() {
-  const zbc = new ZBClient();
-  const file = path.join(__dirname, "..", "bpmn", "test-process.bpmn");
-  await zbc.deployWorkflow(file);
-  const res = await zbc.createWorkflowInstance("test-process", {})
-  console.log(res);
-}
-
-main();
-```
-
-* Run the program with the command: `ts-node src/app.ts`
-
-You will see output similar to: 
-
-```json
-02:00:20.689 | zeebe |  INFO: Authenticating client with Camunda Cloud...
-02:00:23.769 | zeebe |  INFO: Established encrypted connection to Camunda Cloud.
-{
-  workflowKey: '2251799813687791',
-  bpmnProcessId: 'test-process',
-  version: 1,
-  workflowInstanceKey: '2251799813688442'
+    @GetMapping("/start")
+    public String startWorkflowInstance() {
+        WorkflowInstanceEvent workflowInstanceEvent = client
+            .newCreateInstanceCommand()
+            .bpmnProcessId("test-process")
+            .latestVersion()    
+            .send()
+            .join();
+        return workflowInstanceEvent.toString();
+    }
 }
 ```
+
+* Run the program with the command: `mvn spring-boot:run`.
+
+* Visit [http://localhost:8080/start](http://localhost:8080/start) in your browser.
+
+You will see output similar to the following: 
+
+```
+CreateWorkflowInstanceResponseImpl{workflowKey=2251799813685249, bpmnProcessId='test-process', version=1, workflowInstanceKey=2251799813698314}
+``` 
 
 A workflow instance has been started. Let's view it in Operate.
 
@@ -243,40 +187,31 @@ Let's create a task worker to serve the job represented by this task.
 
 We will create a worker program that logs out the job metadata, and completes the job with success.
 
-* Create a new file `src/worker.ts`.
-* Edit the file to look like this:
+* Edit the `src/main/java/io.camunda/CloudStarterApplication.java` file, and add a REST method to start an instance
+of the workflow:
 
-```typescript
-import { ZBClient } from "zeebe-node";
-require("dotenv").config();
+```java
+// ...
+public class CloudStarterApplication {
+	Logger logger = LoggerFactory.getLogger(CloudStarterApplication.class);
 
-const zbc = new ZBClient();
-const worker = zbc.createWorker("get-time", (job, complete) => {
-  console.log(job);
-  complete.success();
-})
+    // ...
+    	@ZeebeWorker(type = "get-time")
+    	public void handleGetTime(final JobClient client, final ActivatedJob job) {
+    		logger.info(job.toString());
+    		client.newCompleteCommand(job.getKey())
+    				.send().join();
+    	}
+}
 ```
 
-* Run the worker program with the command: `ts-node src/worker.ts`.
+* Run the worker program with the command: `mvn spring-boot:run`.
 
 You will see output similar to: 
 
-```json
-{
-  key: '2251799813688447',
-  type: 'get-time',
-  workflowInstanceKey: '2251799813688442',
-  bpmnProcessId: 'test-process',
-  workflowDefinitionVersion: 1,
-  workflowKey: '2251799813687791',
-  elementId: 'Activity_18gdgop',
-  elementInstanceKey: '2251799813688446',
-  customHeaders: {},
-  worker: 'get-time',
-  retries: 3,
-  deadline: '1592750237366',
-  variables: {}
-}
+```
+2020-06-29 09:33:40.420  INFO 5801 --- [ault-executor-1] io.zeebe.client.job.poller               : Activated 1 jobs for worker whatever and job type get-time
+2020-06-29 09:33:40.437  INFO 5801 --- [pool-2-thread-1] i.c.c.CloudStarterApplication            : {"key":2251799813698319,"type":"get-time","customHeaders":{},"workflowInstanceKey":2251799813698314,"bpmnProcessId":"test-process","workflowDefinitionVersion":1,"workflowKey":2251799813685249,"elementId":"Activity_1ucrvca","elementInstanceKey":2251799813698318,"worker":"whatever","retries":3,"deadline":1593380320176,"variables":"{}","variablesAsMap":{}}
 ```
 
 * Go back to Operate. You will see that the workflow instance is gone.
@@ -289,91 +224,71 @@ You will see the completed workflow instance.
 
 We will now create the workflow instance, and get the final outcome in the calling code.
 
-* Keep the worker program running in one terminal.
-* Edit the `src/app.ts` file, and make it look like this:
+* Edit the `src/main/java/io.camunda/CloudStarterApplication.java` file, and edit the `startWorkflowInstance` method, 
+to make it look like this:
 
-```typescript
-import { ZBClient } from "zeebe-node";
-import * as path from "path";
-require("dotenv").config();
+```java
+// ...
+public class CloudStarterApplication {
+    // ...
 
-async function main() {
-  const zbc = new ZBClient();
-  const file = path.join(__dirname, "..", "bpmn", "test-process.bpmn");
-  await zbc.deployWorkflow(file);
-  const res = await zbc.createWorkflowInstanceWithResult("test-process", {})
-  console.log(res);
+    @GetMapping("/start")
+    public String startWorkflowInstance() {
+		WorkflowInstanceResult workflowInstanceResult = client
+            .newCreateInstanceCommand()
+            .bpmnProcessId("test-process")
+            .latestVersion()
+            .withResult()
+            .send()
+            .join();
+		return workflowInstanceResult.toString();
+    }
 }
-
-main();
 ```
 
-* Run the program with the command: `ts-node src/app.ts`.
+* Run the program with the command: `mvn spring-boot:run`.
 
-You will see your worker log out the job as it serves it, and your program will produce output similar to the following:
+* Visit [http://localhost:8080/start](http://localhost:8080/start) in your browser.
 
-```json
-{
-  workflowKey: '2251799813688541',
-  bpmnProcessId: 'test-process',
-  version: 1,
-  workflowInstanceKey: '2251799813688543',
-  variables: {}
-}
+You will see output similar to the following:
+
+```
+CreateWorkflowInstanceWithResultResponseImpl{workflowKey=2251799813685249, bpmnProcessId='test-process', version=1, workflowInstanceKey=2251799813698527, variables='{}'}
 ```
 
 ## Call a REST Service from the Worker 
 
 [Video link](https://youtu.be/AOj64vzEZ_8?t=1426)
 
-* Stop the worker program.
-* Install the `got` package to your project:
+* Edit the `src/main/java/io.camunda/CloudStarterApplication.java` file, and edit the `handleGetTime` method, 
+to make it look like this:
 
-```bash 
-npm i got
+```java
+// ...
+public class CloudStarterApplication {
+    // ...
+
+	@ZeebeWorker(type = "get-time")
+	public void handleGetTime(final JobClient client, final ActivatedJob job) {
+		final String uri = "https://json-api.joshwulf.com/time";
+
+		RestTemplate restTemplate = new RestTemplate();
+		String result = restTemplate.getForObject(uri, String.class);
+
+		client.newCompleteCommand(job.getKey())
+				.variables("{\"time\":" + result + "}")
+				.send().join();
+	}
+}
 ```
 
-* Edit the file `src/worker.ts`, and make it look like this:
-
-```typescript
-import { ZBClient } from "zeebe-node";
-import got from "got";
-require("dotenv").config();
-
-const zbc = new ZBClient();
-
-const url = "https://json-api.joshwulf.com/time";
-
-const worker = zbc.createWorker("get-time", async (job, complete) => {
-  const time = await got(url).json();
-  console.log(time);
-  complete.success({time});
-});
-```
-
-* Run the worker program with the command: `ts-node src/worker.ts`
-* In another terminal, run the program with the command: `ts-node src/app.ts`
+* Run the program with the command: `mvn spring-boot:run`.
+* Visit [http://localhost:8080/start](http://localhost:8080/start) in your browser.
 
 You will see output similar to the following:
 
-```json
-{
-  workflowKey: '2251799813688541',
-  bpmnProcessId: 'test-process',
-  version: 1,
-  workflowInstanceKey: '2251799813688598',
-  variables: {
-    time: {
-      time: 'Sun, 21 Jun 2020 15:08:22 GMT',
-      hour: 15,
-      minute: 8,
-      second: 22,
-      day: 0,
-      month: 5,
-      year: 2020
-    }
-  }
-}
+```
+CreateWorkflowInstanceWithResultResponseImpl{workflowKey=2251799813685249, bpmnProcessId='test-process', version=1, workflowInstanceKey=2251799813698527, variables='{"time":{"time":"Sun, 28 Jun 2020 21:49:48 GMT","hour":21,"minute":49,"second":48,"day":0,"month":5,"year":2020}}'}
 ```
 
 ## Make a Decision 
@@ -410,52 +325,52 @@ It should look like this:
 
 We will create a second worker that takes the custom header and applies it to the variables in the workflow.
 
-* Stop the worker running.
-* Edit the file `src/worker.ts`, and make it look like this:
+* Edit the `src/main/java/io.camunda/CloudStarterApplication.java` file, and add the `handleMakeGreeting` method, 
+to make it look like this:
 
-```typescript
-import { ZBClient } from "zeebe-node";
-import got from "got";
-require("dotenv").config();
+```java
+// ...
+public class CloudStarterApplication {
+    // ...
 
-const zbc = new ZBClient();
-
-const url = "https://json-api.joshwulf.com/time";
-
-const worker = zbc.createWorker("get-time", async (job, complete) => {
-  const time = await got(url).json();
-  console.log(time);
-  complete.success({time});
-});
-
-const greetingWorker = zbc.createWorker("make-greeting", (job, complete) => {
-  const { name } = job.variables;
-  const { greeting } = job.customHeaders;
-  complete.success({
-    say: `${greeting} ${name}`,
-  });
-});
-```
-
-* Edit the file `src/app.ts`, and make it look like this:
-
-```typescript
-import { ZBClient } from "zeebe-node";
-import * as path from "path";
-require("dotenv").config();
-
-async function main() {
-  const zbc = new ZBClient();
-  const file = path.join(__dirname, "..", "bpmn", "test-process.bpmn");
-  await zbc.deployWorkflow(file);
-  const res = await zbc.createWorkflowInstanceWithResult("test-process", {
-    name: "Josh Wulf"
-  })
-  console.log("Process Instance (Complete)", res.variables.say);
+	@ZeebeWorker(type = "make-greeting")
+	public void handleMakeGreeting(final JobClient client, final ActivatedJob job) {
+		Map<String, String> headers = job.getCustomHeaders();
+		String greeting = headers.getOrDefault("greeting", "Good day");
+		Map<String, Object> variablesAsMap = job.getVariablesAsMap();
+		String name = (String) variablesAsMap.getOrDefault("name", "there");
+		String say = greeting + " " + name;
+		client.newCompleteCommand(job.getKey())
+				.variables("{\"say\": \"" + say + "\"}")
+				.send().join();
+	}
 }
-
-main();
 ```
+
+* Edit the `startWorkflowInstance` method, and make it look like this:
+
+```java
+// ...
+public class CloudStarterApplication {
+    // ...
+    @GetMapping("/start")
+    public String startWorkflowInstance() {
+        WorkflowInstanceResult workflowInstanceResult = client
+                .newCreateInstanceCommand()
+                .bpmnProcessId("test-process")
+                .latestVersion()
+                .variables("{\"name\": \"Josh Wulf\"}")
+                .withResult()
+                .send()
+                .join();
+        return (String) workflowInstanceResult
+                .getVariablesAsMap()
+                .getOrDefault("say", "Error: No greeting returned");
+    }
+}
+```
+
+You can change the variable `name` value to your own name (or derive it from the url path or a parameter).
 
 * Start the workers with the command: `ts-node src/worker.ts`
 * Start the app with the command: `ts-node src/app.ts`

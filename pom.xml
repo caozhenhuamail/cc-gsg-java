@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>io.camunda</groupId>
-	<artifactId>cloud-starter</artifactId>
+	<artifactId>cloudstarter</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>cloud-starter</name>
+	<name>cloudstarter</name>
 	<description>Getting Started with Camunda Cloud and Spring Boot</description>
 
 	<properties>
