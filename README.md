@@ -1,8 +1,6 @@
-https://start.spring.io/#!type=maven-project&language=java&platformVersion=2.3.1.RELEASE&packaging=jar&jvmVersion=11&groupId=io.camunda&artifactId=cloudstarter&name=cloudstarter&description=Getting%20Started%20with%20Camunda%20Cloud%20and%20Spring%20Boot&packageName=io.camunda.cloudstarter
+# Getting Started with Camunda Cloud using Java and Spring Zeebe
 
-# Getting Started with Camunda Cloud and Node.js
-
-The [Spring Zeebe Client](https://github.com/zeebe-io/spring-zeebe) exists for Spring and Spring Boot applications. 
+The [Spring Zeebe Client](https://github.com/zeebe-io/spring-zeebe) is available for Spring and Spring Boot applications. 
 
 Watch a [video tutorial on YouTube](https://youtu.be/AOj64vzEZ_8) walking through this Getting Started Guide.
 
@@ -372,18 +370,16 @@ public class CloudStarterApplication {
 
 You can change the variable `name` value to your own name (or derive it from the url path or a parameter).
 
-* Start the workers with the command: `ts-node src/worker.ts`
-* Start the app with the command: `ts-node src/app.ts`
+* Run the program with the command: `mvn spring-boot:run`.
+* Visit [http://localhost:8080/start](http://localhost:8080/start) in your browser.
 
 You will see output similar to the following:
 
 ```
-06:17:42.273 | zeebe |  INFO: Authenticating client with Camunda Cloud...
-06:17:45.039 | zeebe |  INFO: Established encrypted connection to Camunda Cloud.
-Process Instance (Complete) Good Afternoon Josh Wulf
+Good Morning Josh Wulf
 ```
 
 ## Profit!
 
-Congratulations. You've completed the Getting Started Guide for Camunda Cloud using Node.js.
+Congratulations. You've completed the Getting Started Guide for Camunda Cloud using Java with Spring.
 

@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.TemporalUnit;
 import java.util.Date;
 import java.util.Map;
 
@@ -32,7 +34,7 @@ public class CloudStarterApplication {
 	private ZeebeClientLifecycle client;
 
 	Logger logger = LoggerFactory.getLogger(CloudStarterApplication.class);
-
+	Instant start;
 	public static void main(String[] args) {
 		SpringApplication.run(CloudStarterApplication.class, args);
 	}
@@ -46,8 +48,8 @@ public class CloudStarterApplication {
 	@GetMapping("/start")
 	public String startWorkflowInstance() {
 		Date date = new Date();
-		Instant instant3 = date.toInstant();
-		logger.info("Start workflow: " + instant3.toString());
+		start = date.toInstant();
+		logger.info("Start workflow: " + start.toString());
 		WorkflowInstanceResult workflowInstanceResult = client
 				.newCreateInstanceCommand()
 				.bpmnProcessId("test-process")
@@ -57,8 +59,10 @@ public class CloudStarterApplication {
 				.send()
 				.join();
 		date = new Date();
-		instant3 = date.toInstant();
-		logger.info("Finish workflow: " + instant3.toString());
+		Instant finish = date.toInstant();
+		logger.info("Finish workflow: " + finish.toString());
+		Duration elapsedTime = Duration.between(start, finish);
+		logger.info("End-to-end latency: " + elapsedTime.toString());
 		return (String) workflowInstanceResult
 				.getVariablesAsMap()
 				.getOrDefault("say", "Error: No greeting returned");
@@ -66,10 +70,10 @@ public class CloudStarterApplication {
 
 	@ZeebeWorker(type = "get-time")
 	public void handleGetTime(final JobClient client, final ActivatedJob job) {
-		// do whatever you need to do
 		Date date = new Date();
-		Instant instant3 = date.toInstant();
-		logger.info("get-time worker start: " + instant3.toString());
+		Instant workerStart = date.toInstant();
+		Duration elapsedTime = Duration.between(start, workerStart);
+		logger.info("get-time worker latency: " + elapsedTime.toString());
 
 		final String uri = "https://json-api.joshwulf.com/time";
 
@@ -79,16 +83,16 @@ public class CloudStarterApplication {
 		client.newCompleteCommand(job.getKey())
 				.variables("{\"time\":" + result + "}")
 				.send().join();
-		date = new Date();
-		instant3 = date.toInstant();
-		logger.info("get-time worker finish: " + instant3.toString());
+		Instant workerFinish = new Date().toInstant();
+		logger.info("get-time worker finish: " + Duration.between(workerStart, workerFinish).toString());
 	}
 
 	@ZeebeWorker(type = "make-greeting")
 	public void handleMakeGreeting(final JobClient client, final ActivatedJob job) {
 		Date date = new Date();
-		Instant instant3 = date.toInstant();
-		logger.info("make-greeting worker start: " + instant3.toString());
+		Instant workerStart = date.toInstant();
+		Duration elapsedTime = Duration.between(start, workerStart);
+		logger.info("make-greeting worker start latency: " + elapsedTime.toString());
 		Map<String, String> headers = job.getCustomHeaders();
 		String greeting = headers.getOrDefault("greeting", "Good day");
 		Map<String, Object> variablesAsMap = job.getVariablesAsMap();
@@ -97,8 +101,7 @@ public class CloudStarterApplication {
 		client.newCompleteCommand(job.getKey())
 				.variables("{\"say\": \"" + say + "\"}")
 				.send().join();
-		date = new Date();
-		instant3 = date.toInstant();
-		logger.info("make-greeting worker finish: " + instant3.toString());
+		Instant workerFinish = new Date().toInstant();
+		logger.info("make-greeting worker task latency: " + Duration.between(workerStart, workerFinish).toString());
 	}
 }
